@@ -65,6 +65,8 @@ The crown jewel: a fully functional PE2-style console text editor generated from
 - Blue PE2 color scheme
 - IME-aware (works on CJK Windows)
 
+![MachEdit Help Screen](screenshots/machedit_help.png)
+
 ## Reference
 
 The `reference/` directory contains `pe2.asm` — an x86 NASM assembly version of the text editor, which served as architectural reference for the machine code implementation.

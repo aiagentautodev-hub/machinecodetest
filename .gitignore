@@ -2,4 +2,5 @@
 *.exe
 *.txt
 .claude/
-screenshots/
+screenshots/*.png
+!screenshots/machedit_help.png
