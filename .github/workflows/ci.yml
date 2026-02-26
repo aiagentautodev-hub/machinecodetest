@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  generate:
+    name: Generate executables
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate all executables
+        run: |
+          python hello/gen_hello.py
+          python triangle/gen_triangle.py
+          python fib_triangle/gen_fib_triangle.py
+          python gui/gen_gui.py
+          python snake/gen_snake.py
+          python mandelbrot/gen_mandelbrot.py
+          python machedit/gen_machedit.py
+
+      - name: Verify executables were created
+        run: |
+          Test-Path hello/hello.exe
+          Test-Path triangle/triangle.exe
+          Test-Path fib_triangle/fib_triangle.exe
+          Test-Path gui/gui.exe
+          Test-Path snake/snake.exe
+          Test-Path mandelbrot/mandelbrot.exe
+          Test-Path machedit/machedit.exe
+        shell: pwsh

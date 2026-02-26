@@ -2,7 +2,7 @@
 import ctypes, ctypes.wintypes, subprocess, time, os
 
 kernel32 = ctypes.windll.kernel32
-exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'machedit.exe')
+exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'machedit', 'machedit.exe')
 
 proc = subprocess.Popen([exe], creationflags=0x00000010)  # CREATE_NEW_CONSOLE
 time.sleep(4)  # Wait for editor to init (includes 200ms sleep in editor)

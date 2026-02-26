@@ -126,6 +126,8 @@ kernel32_funcs = [
     "GetFileSize",                     # 17
     "FlushConsoleInputBuffer",         # 18
     "Sleep",                           # 19
+    "LoadLibraryA",                    # 20
+    "GetProcAddress",                  # 21
 ]
 
 k32_hns = [hint_name(0, f) for f in kernel32_funcs]
@@ -180,9 +182,11 @@ status_fmt_rva = add_str(" Ln %d, Col %d")  # not used as format, just ref
 new_file_rva  = add_str("[New File]")
 modified_rva  = add_str(" [Modified]")
 saved_rva     = add_str(" [Saved]")
-help_rva      = add_str(" F1:Help  Esc:Exit  Ctrl+S:Save ")
+help_rva      = add_str(" Ctrl+H:Help  Esc:Exit  Ctrl+S:Save ")
 line_str_rva  = add_str(" Ln ")
 col_str_rva   = add_str(" Col ")
+imm32_dll_rva = add_str("imm32.dll")
+imm_disable_rva = add_str("ImmDisableIME")
 sep_str_rva   = add_str(" | ")
 
 # Help screen lines
@@ -204,7 +208,7 @@ help_lines = [
     "  Ctrl+S         Save file",
     "",
     "Other:",
-    "  F1             This help screen",
+    "  Ctrl+H        This help screen",
     "  Esc / Ctrl+Q   Exit editor",
     "",
     "--- Press any key to return ---",
@@ -1413,6 +1417,22 @@ a.emit(b'\xFF\x35')
 a.emit_u32(STDIN_H)
 a.call_iat(IAT['FlushConsoleInputBuffer'])
 
+# Disable IME: LoadLibraryA("imm32.dll") then GetProcAddress("ImmDisableIME") then call(-1)
+a.emit(b'\x68')                        # push "imm32.dll"
+a.emit_u32(IMAGE_BASE + imm32_dll_rva)
+a.call_iat(IAT['LoadLibraryA'])
+a.emit(b'\x85\xC0')                    # test eax, eax
+a.jcc32(0x84, 'ime_done')              # jz skip if failed
+a.emit(b'\x68')                        # push "ImmDisableIME"
+a.emit_u32(IMAGE_BASE + imm_disable_rva)
+a.emit(b'\x50')                        # push hModule (eax)
+a.call_iat(IAT['GetProcAddress'])
+a.emit(b'\x85\xC0')                    # test eax, eax
+a.jcc32(0x84, 'ime_done')              # jz skip if not found
+a.emit(b'\x6A\xFF')                    # push -1 (all threads)
+a.emit(b'\xFF\xD0')                    # call eax (ImmDisableIME(-1))
+a.label('ime_done')
+
 # Set console title
 a.emit(b'\x68')
 a.emit_u32(IMAGE_BASE + title_rva)
@@ -1531,6 +1551,12 @@ a.emit_u32(INPUT_REC + 14)
 a.emit(b'\x8B\x0D')                    # mov ecx, [INPUT_REC+16]
 a.emit_u32(INPUT_REC + 16)
 
+# ---- Skip IME processed keys (VK_PROCESSKEY = 0xE5) ----
+# Chinese IME intercepts keys (like F1) and generates VK_PROCESSKEY with
+# garbage AsciiChar. We must discard these to avoid inserting random chars.
+a.emit(b'\x3D\xE5\x00\x00\x00')       # cmp eax, 0xE5
+a.jcc32(0x84, 'main_loop')             # je skip (IME event)
+
 # ---- Check Escape (VK_ESCAPE = 0x1B) ----
 a.emit(b'\x3D\x1B\x00\x00\x00')       # cmp eax, 0x1B
 a.jcc32(0x84, 'do_exit')
@@ -1596,9 +1622,13 @@ a.jcc32(0x84, 'key_delete')
 a.emit(b'\x3D\x0D\x00\x00\x00')
 a.jcc32(0x84, 'key_enter')
 
-# VK_F1 = 0x70
-a.emit(b'\x3D\x70\x00\x00\x00')
-a.jcc32(0x84, 'key_f1')
+# ---- Ctrl+H = Help ----
+a.emit(b'\x3D\x48\x00\x00\x00')       # cmp eax, 0x48 (VK_H)
+a.jcc32(0x85, 'not_ctrl_h')
+a.emit(b'\xF7\xC1\x0C\x00\x00\x00')   # test ecx, 0x0C (LEFT_CTRL|RIGHT_CTRL)
+a.jcc32(0x84, 'not_ctrl_h')
+a.jmp32('key_f1')
+a.label('not_ctrl_h')
 
 # ---- Printable character ----
 # If ASCII char (bl) >= 0x20, insert it
