@@ -2,6 +2,8 @@
 *.exe
 *.txt
 .claude/
+.mcp.json
+.sync-public.json
 screenshots/*.png
 !screenshots/machedit_help.png
 !screenshots/mandelbrot.png
