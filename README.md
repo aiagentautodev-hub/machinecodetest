@@ -69,10 +69,6 @@ The crown jewel: a fully functional PE2-style console text editor generated from
 
 The `reference/` directory contains `pe2.asm` — an x86 NASM assembly version of the text editor, which served as architectural reference for the machine code implementation.
 
-## Screenshots
-
-![Snake Game](screenshots/snake_screenshot.png)
-
 ## License
 
 [MIT](LICENSE)
