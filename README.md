@@ -16,7 +16,7 @@ Each subdirectory contains a `gen_*.py` script that generates a working `.exe`:
 | 3 | **[fib_triangle](fib_triangle/)** | Fibonacci Triangle — nested loops, number formatting | ~2 KB |
 | 4 | **[gui](gui/)** | GUI Window — Win32 `CreateWindowEx`, message loop, `WndProc` | ~4 KB |
 | 5 | **[snake](snake/)** | Snake Game — real-time console game with input handling | ~4 KB |
-| 6 | **[mandelbrot](mandelbrot/)** | Mandelbrot Set — fixed-point math, ANSI color rendering | ~3 KB |
+| 6 | **[mandelbrot](mandelbrot/)** | Mandelbrot Set — fixed-point math, ASCII art rendering | ~2 KB |
 | 7 | **[machedit](machedit/)** | Text Editor — PE2-style console editor with file I/O | ~6 KB |
 
 ## How It Works
@@ -66,6 +66,10 @@ The crown jewel: a fully functional PE2-style console text editor generated from
 - IME-aware (works on CJK Windows)
 
 ![MachEdit Help Screen](screenshots/machedit_help.png)
+
+## Mandelbrot Set
+
+![Mandelbrot](screenshots/mandelbrot.png)
 
 ## Reference
 
